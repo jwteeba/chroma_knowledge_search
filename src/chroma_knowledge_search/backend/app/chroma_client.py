@@ -1,13 +1,16 @@
 import chromadb
 import streamlit as st
+import socket
 
-client = chromadb.Client()
-
-# client = chromadb.CloudClient(
-#   api_key=settings.CHROMA_API_KEY,
-#   tenant=settings.CHROMA_TENANT,
-#   database=settings
-# )
+client = (
+    chromadb.Client()
+    if socket.gethostname() == st.secrets.hosts.hostname
+    else chromadb.CloudClient(
+        api_key=st.secrets.chromadb.chroma_api_key,
+        tenant=st.secrets.chromadb.chroma_tenant,
+        database=st.secrets.chromadb.chroma_database,
+    )
+)
 
 
 def get_or_create_collection():
