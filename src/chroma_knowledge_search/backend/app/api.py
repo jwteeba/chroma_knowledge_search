@@ -7,7 +7,9 @@ from chroma_knowledge_search.backend.app.auth import require_api_key
 from chroma_knowledge_search.backend.app.chroma_client import (
     query as chroma_query,
 )
-from chroma_knowledge_search.backend.app.chroma_client import upsert_chunks
+from chroma_knowledge_search.backend.app.chroma_client import (
+    upsert_chunks,
+)
 from chroma_knowledge_search.backend.app.db import get_db
 from chroma_knowledge_search.backend.app.embeddings import get_embeddings
 from chroma_knowledge_search.backend.app.models import Document

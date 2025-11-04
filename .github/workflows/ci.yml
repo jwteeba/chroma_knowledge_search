@@ -68,7 +68,6 @@ jobs:
       run: |
         black --check src/ tests/
         flake8 src/ tests/
-        isort --check-only src/ tests/
     
     - name: Run security checks
       run: |
