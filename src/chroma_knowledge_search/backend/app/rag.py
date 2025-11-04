@@ -1,5 +1,6 @@
-from openai import OpenAI
 import streamlit as st
+from openai import OpenAI
+
 from chroma_knowledge_search.backend.app.moderation import is_flagged
 
 client = OpenAI(api_key=st.secrets.openai.api_key)
@@ -20,7 +21,9 @@ def build_prompt(context_chunks: list[str], question: str) -> list[dict]:
     Returns:
         list[dict]: Chat messages for OpenAI API
     """
-    context = "\n\n".join([f"[Chunk {i+1}] {c}" for i, c in enumerate(context_chunks)])
+    context = "\n\n".join(
+        [f"[Chunk {i + 1}] {c}" for i, c in enumerate(context_chunks)]
+    )
     user_prompt = (
         f"Context:\n{context}\n\n"
         f"Question: {question}\n"

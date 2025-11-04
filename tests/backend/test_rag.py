@@ -1,6 +1,9 @@
 from unittest.mock import Mock, patch
 
-from chroma_knowledge_search.backend.app.rag import build_prompt, generate_answer
+from chroma_knowledge_search.backend.app.rag import (
+    build_prompt,
+    generate_answer,
+)
 
 
 class TestRAG:
@@ -21,10 +24,16 @@ class TestRAG:
 
     def test_generate_answer_success(self):
         """Test successful answer generation."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.rag.is_flagged", return_value=False
-        ), patch("chroma_knowledge_search.backend.app.rag.client") as mock_client:
-
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.rag.is_flagged",
+                return_value=False,
+            ),
+            patch(
+                "chroma_knowledge_search.backend.app.rag.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
             mock_secrets.openai.chat_model = "gpt-3.5-turbo"
 
@@ -42,10 +51,16 @@ class TestRAG:
 
     def test_generate_answer_flagged_question(self):
         """Test answer generation with flagged question."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.rag.is_flagged", return_value=True
-        ), patch("chroma_knowledge_search.backend.app.rag.client") as mock_client:
-
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.rag.is_flagged",
+                return_value=True,
+            ),
+            patch(
+                "chroma_knowledge_search.backend.app.rag.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
 
             chunks = ["Test content"]
@@ -58,16 +73,23 @@ class TestRAG:
 
     def test_generate_answer_flagged_response(self):
         """Test answer generation with flagged response."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.rag.is_flagged",
-            side_effect=[False, True],
-        ), patch("chroma_knowledge_search.backend.app.rag.client") as mock_client:
-
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.rag.is_flagged",
+                side_effect=[False, True],
+            ),
+            patch(
+                "chroma_knowledge_search.backend.app.rag.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
             mock_secrets.openai.chat_model = "gpt-3.5-turbo"
 
             mock_response = Mock()
-            mock_response.choices = [Mock(message=Mock(content="Flagged content"))]
+            mock_response.choices = [
+                Mock(message=Mock(content="Flagged content"))
+            ]
             mock_client.chat.completions.create.return_value = mock_response
 
             chunks = ["Test content"]

@@ -1,6 +1,5 @@
 from unittest.mock import Mock, patch
 
-
 from chroma_knowledge_search.backend.app.moderation import is_flagged
 
 
@@ -9,9 +8,12 @@ class TestModeration:
 
     def test_is_flagged_safe_content(self):
         """Test moderation with safe content."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.moderation.client"
-        ) as mock_client:
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.moderation.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
             mock_secrets.openai.moderation_model = "text-moderation-latest"
 
@@ -26,9 +28,12 @@ class TestModeration:
 
     def test_is_flagged_unsafe_content(self):
         """Test moderation with unsafe content."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.moderation.client"
-        ) as mock_client:
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.moderation.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
             mock_secrets.openai.moderation_model = "text-moderation-latest"
 
@@ -42,9 +47,12 @@ class TestModeration:
 
     def test_is_flagged_no_results(self):
         """Test moderation with no results."""
-        with patch("streamlit.secrets") as mock_secrets, patch(
-            "chroma_knowledge_search.backend.app.moderation.client"
-        ) as mock_client:
+        with (
+            patch("streamlit.secrets") as mock_secrets,
+            patch(
+                "chroma_knowledge_search.backend.app.moderation.client"
+            ) as mock_client,
+        ):
             mock_secrets.openai.api_key = "test-key"
             mock_secrets.openai.moderation_model = "text-moderation-latest"
 

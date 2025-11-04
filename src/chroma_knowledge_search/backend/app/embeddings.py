@@ -1,6 +1,6 @@
-from openai import OpenAI
-from tenacity import retry, wait_exponential, stop_after_attempt
 import streamlit as st
+from openai import OpenAI
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 client = OpenAI(api_key=st.secrets.openai.api_key)
 
@@ -15,5 +15,7 @@ def get_embeddings(texts: list[str]) -> list[list[float]]:
     Returns:
         list[list[float]]: List of embedding vectors
     """
-    resp = client.embeddings.create(model=st.secrets.openai.embed_model, input=texts)
+    resp = client.embeddings.create(
+        model=st.secrets.openai.embed_model, input=texts
+    )
     return [d.embedding for d in resp.data]

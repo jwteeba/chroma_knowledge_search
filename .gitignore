@@ -9,6 +9,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+bin/
 eggs/
 .eggs/
 lib/
@@ -21,3 +22,5 @@ wheels/
 .installed.cfg
 *.egg
 data.db
+.pytest_cache
+.ruff_cache

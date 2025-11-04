@@ -1,6 +1,5 @@
 from unittest.mock import Mock, patch
 
-
 from chroma_knowledge_search.backend.app.embeddings import get_embeddings
 
 

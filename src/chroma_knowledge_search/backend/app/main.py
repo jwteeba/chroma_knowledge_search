@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
+
+import streamlit as st
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from chroma_knowledge_search.backend.app.api import router as api_router
-import streamlit as st
 from chroma_knowledge_search.backend.app.db import init_db
 
 

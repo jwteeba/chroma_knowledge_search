@@ -2,8 +2,8 @@ from unittest.mock import Mock, patch
 
 from chroma_knowledge_search.backend.app.chroma_client import (
     get_or_create_collection,
-    upsert_chunks,
     query,
+    upsert_chunks,
 )
 
 

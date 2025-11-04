@@ -1,15 +1,23 @@
-import pytest
-import time
+import os
+import shutil
 import subprocess
+import tempfile
+import time
+
+import pytest
 import requests
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.common.exceptions import TimeoutException
-import tempfile
-import os
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
+# Skip all tests if Chrome is not available
+pytestmark = pytest.mark.skipif(
+    shutil.which("google-chrome") is None
+    and shutil.which("chromium-browser") is None,
+    reason="Chrome/Chromium not available for Selenium tests",
+)
 
 
 class TestStreamlitUI:
@@ -20,26 +28,28 @@ class TestStreamlitUI:
         """Start Streamlit server for testing."""
         # Create temporary secrets file
         secrets_content = """
-[fastapi]
-api_key = "test-api-key"
+            [fastapi]
+            api_key = "test-api-key"
 
-[openai]
-api_key = "test-openai-key"
-embed_model = "text-embedding-ada-002"
-chat_model = "gpt-3.5-turbo"
-moderation_model = "text-moderation-latest"
+            [openai]
+            api_key = "test-openai-key"
+            embed_model = "text-embedding-ada-002"
+            chat_model = "gpt-3.5-turbo"
+            moderation_model = "text-moderation-latest"
 
-[chromadb]
-chroma_collection = "test-collection"
+            [chromadb]
+            chroma_collection = "test-collection"
 
-[sqlite]
-db_url = "sqlite+aiosqlite:///:memory:"
+            [sqlite]
+            db_url = "sqlite+aiosqlite:///:memory:"
 
-[cors]
-allow_origins = ["*"]
-"""
+            [cors]
+            allow_origins = ["*"]
+        """
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".toml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".toml", delete=False
+        ) as f:
             f.write(secrets_content)
             secrets_path = f.name
 
@@ -87,6 +97,10 @@ allow_origins = ["*"]
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
+        # Set Chrome binary path for CI
+        if shutil.which("chromium-browser"):
+            options.binary_location = "/usr/bin/chromium-browser"
+
         driver = webdriver.Chrome(options=options)
         driver.implicitly_wait(10)
 
@@ -100,7 +114,9 @@ allow_origins = ["*"]
 
         # Wait for page to load
         wait = WebDriverWait(driver, 10)
-        title_element = wait.until(EC.presence_of_element_located((By.TAG_NAME, "h1")))
+        title_element = wait.until(
+            EC.presence_of_element_located((By.TAG_NAME, "h1"))
+        )
 
         assert (
             "Chroma Knowledge Search" in driver.title
@@ -122,7 +138,9 @@ allow_origins = ["*"]
         assert api_base_input is not None
 
         # Check for API Key input
-        api_key_input = driver.find_element(By.CSS_SELECTOR, "input[type='password']")
+        api_key_input = driver.find_element(
+            By.CSS_SELECTOR, "input[type='password']"
+        )
         assert api_key_input is not None
 
     def test_api_key_warning(self, driver, streamlit_server):
@@ -132,7 +150,9 @@ allow_origins = ["*"]
         # Wait for page to load and check for API key input presence
         wait = WebDriverWait(driver, 10)
         api_key_input = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "input[type='password']")
+            )
         )
 
         # Just verify the API key input exists (which implies warning logic)
@@ -146,7 +166,9 @@ allow_origins = ["*"]
 
         # Enter API key
         api_key_input = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "input[type='password']")
+            )
         )
         api_key_input.send_keys("test-api-key")
 
@@ -156,14 +178,17 @@ allow_origins = ["*"]
 
         # Check for upload section
         upload_elements = driver.find_elements(
-            By.CSS_SELECTOR, "input[type='file'], [data-testid='stFileUploader']"
+            By.CSS_SELECTOR,
+            "input[type='file'], [data-testid='stFileUploader']",
         )
         headers = driver.find_elements(By.TAG_NAME, "h2")
 
         upload_section_found = len(upload_elements) > 0 or any(
             "upload" in header.text.lower() for header in headers
         )
-        assert upload_section_found, "Upload section not found after entering API key"
+        assert (
+            upload_section_found
+        ), "Upload section not found after entering API key"
 
     def test_question_section_with_api_key(self, driver, streamlit_server):
         """Test question section appears after entering API key."""
@@ -173,7 +198,9 @@ allow_origins = ["*"]
 
         # Enter API key
         api_key_input = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "input[type='password']")
+            )
         )
         api_key_input.send_keys("test-api-key")
 
@@ -182,7 +209,9 @@ allow_origins = ["*"]
         time.sleep(2)
 
         # Check for question input and slider
-        text_inputs = driver.find_elements(By.CSS_SELECTOR, "input[type='text']")
+        text_inputs = driver.find_elements(
+            By.CSS_SELECTOR, "input[type='text']"
+        )
         sliders = driver.find_elements(
             By.CSS_SELECTOR, "input[type='range'], .stSlider"
         )
@@ -205,7 +234,9 @@ allow_origins = ["*"]
 
         # Enter API key
         api_key_input = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "input[type='password']"))
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, "input[type='password']")
+            )
         )
         api_key_input.send_keys("test-api-key")
 
@@ -214,9 +245,13 @@ allow_origins = ["*"]
         time.sleep(3)
 
         # Try to find and interact with question input
-        text_inputs = driver.find_elements(By.CSS_SELECTOR, "input[type='text']")
+        text_inputs = driver.find_elements(
+            By.CSS_SELECTOR, "input[type='text']"
+        )
         if len(text_inputs) > 1:  # Should have API base + question input
-            question_input = text_inputs[-1]  # Last text input should be question
+            question_input = text_inputs[
+                -1
+            ]  # Last text input should be question
             question_input.send_keys("What is the content?")
 
             # Look for Ask button

@@ -1,7 +1,6 @@
 import pytest
 from fastapi import HTTPException
 
-
 from chroma_knowledge_search.backend.app.auth import require_api_key
 
 

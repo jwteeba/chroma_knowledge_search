@@ -1,4 +1,4 @@
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 
 class TestUploadEndpoint:
@@ -46,10 +46,13 @@ class TestQueryEndpoint:
 
     def test_query_success(self, client, mock_openai, mock_chroma):
         """Test successful query."""
-        with patch("chroma_knowledge_search.backend.app.db.get_db") as mock_db, patch(
-            "chroma_knowledge_search.backend.app.rag.generate_answer",
-            return_value="Test answer",
-        ) as mock_rag:
+        with (
+            patch("chroma_knowledge_search.backend.app.db.get_db") as mock_db,
+            patch(
+                "chroma_knowledge_search.backend.app.rag.generate_answer",
+                return_value="Test answer",
+            ) as mock_rag,
+        ):
             mock_session = Mock()
             mock_db.return_value.__aenter__.return_value = mock_session
 
@@ -73,14 +76,20 @@ class TestQueryEndpoint:
 
     def test_query_no_results(self, client, mock_openai):
         """Test query with no matching documents."""
-        with patch("chroma_knowledge_search.backend.app.db.get_db") as mock_db, patch(
-            "chroma_knowledge_search.backend.app.chroma_client.client"
-        ) as mock_client:
+        with (
+            patch("chroma_knowledge_search.backend.app.db.get_db") as mock_db,
+            patch(
+                "chroma_knowledge_search.backend.app.chroma_client.client"
+            ) as mock_client,
+        ):
             mock_session = Mock()
             mock_db.return_value.__aenter__.return_value = mock_session
 
             mock_collection = Mock()
-            mock_collection.query.return_value = {"documents": [[]], "metadatas": [[]]}
+            mock_collection.query.return_value = {
+                "documents": [[]],
+                "metadatas": [[]],
+            }
             mock_client.get_collection.return_value = mock_collection
 
             headers = {"x-api-key": "test-api-key"}

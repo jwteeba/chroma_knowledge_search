@@ -35,10 +35,17 @@ def upsert_chunks(document_id: str, chunks: list[dict], owner_key: str):
     """
     col = get_or_create_collection()
     ids = [f"{document_id}-{i}" for i, _ in enumerate(chunks)]
-    metadatas = [{"document_id": document_id, "owner_key": owner_key} for _ in chunks]
+    metadatas = [
+        {"document_id": document_id, "owner_key": owner_key} for _ in chunks
+    ]
     embeddings = [c["embedding"] for c in chunks]
     documents = [c["text"] for c in chunks]
-    col.add(ids=ids, embeddings=embeddings, metadatas=metadatas, documents=documents)
+    col.add(
+        ids=ids,
+        embeddings=embeddings,
+        metadatas=metadatas,
+        documents=documents,
+    )
 
 
 def query(query_embedding, top_k=5, owner_key: str | None = None):
@@ -54,4 +61,6 @@ def query(query_embedding, top_k=5, owner_key: str | None = None):
     """
     col = get_or_create_collection()
     where = {"owner_key": owner_key} if owner_key else None
-    return col.query(query_embeddings=[query_embedding], n_results=top_k, where=where)
+    return col.query(
+        query_embeddings=[query_embedding], n_results=top_k, where=where
+    )

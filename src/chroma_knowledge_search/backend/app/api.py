@@ -1,22 +1,26 @@
-from fastapi import APIRouter, File, UploadFile, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 
-from chroma_knowledge_search.backend.app.schemas import (
-    UploadResponse,
-    QueryRequest,
-    QueryResult,
-)
-from chroma_knowledge_search.backend.app.db import get_db
-from chroma_knowledge_search.backend.app.models import Document
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from chroma_knowledge_search.backend.app.auth import require_api_key
-from chroma_knowledge_search.backend.app.utils import extract_text_from_file, chunk_text
-from chroma_knowledge_search.backend.app.embeddings import get_embeddings
 from chroma_knowledge_search.backend.app.chroma_client import (
-    upsert_chunks,
     query as chroma_query,
 )
+from chroma_knowledge_search.backend.app.chroma_client import upsert_chunks
+from chroma_knowledge_search.backend.app.db import get_db
+from chroma_knowledge_search.backend.app.embeddings import get_embeddings
+from chroma_knowledge_search.backend.app.models import Document
 from chroma_knowledge_search.backend.app.rag import generate_answer
+from chroma_knowledge_search.backend.app.schemas import (
+    QueryRequest,
+    QueryResult,
+    UploadResponse,
+)
+from chroma_knowledge_search.backend.app.utils import (
+    chunk_text,
+    extract_text_from_file,
+)
 
 router = APIRouter()
 
@@ -61,7 +65,9 @@ async def upload(
     chunks = chunk_text(text, CHUNK_SIZE, CHUNK_OVERLAP)
     chunks = [c for c in chunks if c["text"].strip()]  # ✅ remove empty chunks
     if not chunks:
-        raise HTTPException(status_code=400, detail="No valid text chunks extracted")
+        raise HTTPException(
+            status_code=400, detail="No valid text chunks extracted"
+        )
 
     # Embeddings
     texts = [c["text"] for c in chunks]
@@ -122,7 +128,8 @@ async def query_docs(
 
     if not docs:
         return QueryResult(
-            answer="I couldn't find relevant context for your question.", sources=[]
+            answer="I couldn't find relevant context for your question.",
+            sources=[],
         )
 
     answer = generate_answer(docs, req.query)

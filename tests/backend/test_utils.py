@@ -1,9 +1,12 @@
-import pytest
 import html
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
+import pytest
 
-from chroma_knowledge_search.backend.app.utils import extract_text_from_file, chunk_text
+from chroma_knowledge_search.backend.app.utils import (
+    chunk_text,
+    extract_text_from_file,
+)
 
 
 class TestTextExtraction:

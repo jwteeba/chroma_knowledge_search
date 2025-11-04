@@ -1,6 +1,7 @@
 import os
-import streamlit as st
+
 import requests
+import streamlit as st
 
 st.set_page_config(page_title="Chroma Knowledge Search", layout="centered")
 st.title("Chroma Knowledge Search")
@@ -24,7 +25,9 @@ if not st.session_state["api_key"]:
 headers = {"x-api-key": st.session_state["api_key"]}
 
 st.header("1) Upload documents")
-uploaded = st.file_uploader("Upload (pdf/txt/docx)", type=["pdf", "txt", "docx"])
+uploaded = st.file_uploader(
+    "Upload (pdf/txt/docx)", type=["pdf", "txt", "docx"]
+)
 if uploaded is not None and st.button("Upload"):
     files = {"file": (uploaded.name, uploaded.getvalue())}
     try:

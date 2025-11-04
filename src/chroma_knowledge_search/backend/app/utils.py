@@ -1,7 +1,8 @@
 import io
 from typing import List
-from pdfminer.high_level import extract_text
+
 import docx
+from pdfminer.high_level import extract_text
 
 SUPPORTED_EXTS = (".pdf", ".txt", ".docx")
 
