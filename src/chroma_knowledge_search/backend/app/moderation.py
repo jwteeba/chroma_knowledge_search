@@ -1,7 +1,12 @@
-import streamlit as st
+import os
 from openai import OpenAI
+from chroma_knowledge_search.backend.app.config import load_config
 
-client = OpenAI(api_key=st.secrets.openai.api_key)
+load_config()
+
+openai_api_key = os.getenv("OPENAI_API_KEY")
+
+client = OpenAI(api_key=openai_api_key)
 
 
 def is_flagged(text: str) -> bool:

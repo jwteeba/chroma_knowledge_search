@@ -1,10 +1,15 @@
-import streamlit as st
+import os
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
 from chroma_knowledge_search.backend.app.models import Base
+from chroma_knowledge_search.backend.app.config import load_config
 
-engine = create_async_engine(st.secrets.sqlite.db_url, echo=False, future=True)
+# Load configuration
+load_config()
+db_url = os.getenv("DB_URL")
+
+engine = create_async_engine(db_url, echo=False, future=True)
 AsyncSessionLocal = sessionmaker(
     engine, class_=AsyncSession, expire_on_commit=False
 )

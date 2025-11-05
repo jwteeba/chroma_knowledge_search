@@ -1,11 +1,16 @@
-import streamlit as st
+import os
 from openai import OpenAI
 
 from chroma_knowledge_search.backend.app.logging_config import get_logger
 from chroma_knowledge_search.backend.app.moderation import is_flagged
+from chroma_knowledge_search.backend.app.config import load_config
 
 logger = get_logger(__name__)
-client = OpenAI(api_key=st.secrets.openai.api_key)
+
+load_config()
+openai_api_key = os.getenv("OPENAI_API_KEY")
+openai_chat_model = os.getenv("OPENAI_CHAT_MODEL")
+client = OpenAI(api_key=openai_api_key)
 
 SYSTEM_PROMPT = (
     "You are a helpful, concise assistant. Use ONLY the provided context to answer. "
@@ -58,7 +63,7 @@ def generate_answer(context_chunks: list[str], question: str) -> str:
 
     messages = build_prompt(context_chunks, question)
     resp = client.chat.completions.create(
-        model=st.secrets.openai.chat_model,
+        model=openai_chat_model,
         messages=messages,
         temperature=0.2,
     )

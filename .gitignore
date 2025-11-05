@@ -24,3 +24,5 @@ wheels/
 data.db
 .pytest_cache
 .ruff_cache
+.streamlit
+.coverage

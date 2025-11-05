@@ -1,8 +1,12 @@
 from contextlib import asynccontextmanager
 
-import streamlit as st
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from chroma_knowledge_search.backend.app.config import (
+    load_config,
+    get_allow_origins,
+)
 
 from chroma_knowledge_search.backend.app.api import router as api_router
 from chroma_knowledge_search.backend.app.db import init_db
@@ -13,6 +17,9 @@ from chroma_knowledge_search.backend.app.logging_config import (
 
 setup_logging()
 logger = get_logger(__name__)
+
+load_config()
+allow_origins = get_allow_origins()
 
 
 @asynccontextmanager
@@ -28,7 +35,7 @@ app = FastAPI(title="Chroma Knowledge Search (API Key)", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=st.secrets.cors.allow_origins,
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

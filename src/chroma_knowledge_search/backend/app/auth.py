@@ -1,6 +1,5 @@
 import hashlib
-
-import streamlit as st
+import os
 from fastapi import Header, HTTPException, status
 
 
@@ -20,7 +19,8 @@ async def require_api_key(x_api_key: str = Header(None)) -> str:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing API key"
         )
-    if x_api_key != st.secrets.fastapi.api_key:
+    api_key = os.environ.get("API_KEY")
+    if x_api_key != api_key:
         # Optionally use constant-time compare
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API key"

@@ -1,12 +1,17 @@
 import os
-
 import chromadb
-import streamlit as st
 
 from chroma_knowledge_search.backend.app.logging_config import get_logger
+from chroma_knowledge_search.backend.app.config import load_config
 
 logger = get_logger(__name__)
 _client = None
+
+# Load configuration
+load_config()
+chroma_api_key = os.getenv("CHROMA_API_KEY")
+chroma_tenant = os.getenv("CHROMA_TENANT")
+chroma_database = os.getenv("CHROMA_DATABASE")
 
 
 def get_client():
@@ -22,16 +27,12 @@ def get_client():
         else:
             # Use Chroma Cloud if credentials are available
             try:
-                if (
-                    hasattr(st.secrets, "chromadb")
-                    and hasattr(st.secrets.chromadb, "chroma_api_key")
-                    and st.secrets.chromadb.chroma_api_key
-                ):
+                if chroma_api_key and chroma_tenant and chroma_database:
                     logger.info("Using ChromaDB Cloud client")
                     _client = chromadb.CloudClient(
-                        api_key=st.secrets.chromadb.chroma_api_key,
-                        tenant=st.secrets.chromadb.chroma_tenant,
-                        database=st.secrets.chromadb.chroma_database,
+                        api_key=chroma_api_key,
+                        tenant=chroma_tenant,
+                        database=chroma_database,
                     )
                 else:
                     logger.info("Using local ChromaDB client")
@@ -51,20 +52,15 @@ def get_or_create_collection():
         Collection: ChromaDB collection instance
     """
     client = get_client()
+    collection_name = os.getenv("CHROMA_COLLECTION")
     try:
-        collection = client.get_collection(
-            st.secrets.chromadb.chroma_collection
-        )
-        logger.debug(
-            f"Retrieved existing collection: {st.secrets.chromadb.chroma_collection}"
-        )
+        collection = client.get_collection(collection_name)
+        logger.debug(f"Retrieved existing collection: {collection_name}")
         return collection
     except Exception as e:
-        logger.info(
-            f"Creating new collection: {st.secrets.chromadb.chroma_collection}"
-        )
+        logger.info(f"Creating new collection: {collection_name}")
         return client.create_collection(
-            st.secrets.chromadb.chroma_collection,
+            collection_name,
             metadata={"description": "Knowledge search collection"},
         )
 

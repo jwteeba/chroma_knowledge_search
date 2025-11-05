@@ -17,7 +17,7 @@ class TestChromaClient:
         assert collection is not None
         mock_chroma.get_collection.assert_called_once()
 
-    def test_get_or_create_collection_create_new(self, mock_secrets):
+    def test_get_or_create_collection_create_new(self):
         """Test creating new collection when it doesn't exist."""
         with patch(
             "chroma_knowledge_search.backend.app.chroma_client.get_client"

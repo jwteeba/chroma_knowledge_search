@@ -1,23 +1,25 @@
+import os
 import sys
-from unittest.mock import Mock, patch
-
 import pytest
+from unittest.mock import Mock, patch
+from fastapi.testclient import TestClient
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
-# Mock streamlit secrets before any imports
-if "streamlit" not in sys.modules:
-    mock_secrets = Mock()
-    mock_secrets.sqlite.db_url = "sqlite+aiosqlite:///:memory:"
-    mock_secrets.fastapi.api_key = "test-api-key"
-    mock_secrets.openai.api_key = "test-openai-key"
-    mock_secrets.openai.embed_model = "text-embedding-ada-002"
-    mock_secrets.openai.chat_model = "gpt-3.5-turbo"
-    mock_secrets.openai.moderation_model = "text-moderation-latest"
-    mock_secrets.chromadb.chroma_collection = "test-collection"
-    mock_secrets.cors.allow_origins = ["*"]
+from chroma_knowledge_search.backend.app.config import load_config
+from chroma_knowledge_search.backend.app.db import get_db
+from chroma_knowledge_search.backend.app.main import app
+from chroma_knowledge_search.backend.app.models import Base
 
-    mock_st = Mock()
-    mock_st.secrets = mock_secrets
-    sys.modules["streamlit"] = mock_st
+# Set test environment variables
+os.environ["DB_URL"] = "sqlite+aiosqlite:///:memory:"
+os.environ["API_KEY"] = "test-api-key"
+os.environ["OPENAI_API_KEY"] = "test-openai-key"
+os.environ["OPENAI_EMBED_MODEL"] = "text-embedding-ada-002"
+os.environ["OPENAI_CHAT_MODEL"] = "gpt-3.5-turbo"
+os.environ["OPENAI_MODERATION_MODEL"] = "text-moderation-latest"
+os.environ["CHROMA_COLLECTION"] = "test-collection"
+os.environ["ALLOW_ORIGINS"] = "*"
 
 # Mock OpenAI client
 if "openai" not in sys.modules:
@@ -42,13 +44,12 @@ if "openai" not in sys.modules:
     mock_openai.OpenAI.return_value = mock_client
     sys.modules["openai"] = mock_openai
 
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 
-from chroma_knowledge_search.backend.app.db import get_db
-from chroma_knowledge_search.backend.app.main import app
-from chroma_knowledge_search.backend.app.models import Base
+# Load config to set environment variables
+load_config()
+
+# Override with test values after config loading
+os.environ["API_KEY"] = "test-api-key"
 
 
 @pytest.fixture
@@ -72,22 +73,7 @@ async def test_db():
 
 
 @pytest.fixture
-def mock_secrets():
-    """Mock Streamlit secrets."""
-    with patch("streamlit.secrets") as mock:
-        mock.fastapi.api_key = "test-api-key"
-        mock.openai.api_key = "test-openai-key"
-        mock.openai.embed_model = "text-embedding-ada-002"
-        mock.openai.chat_model = "gpt-3.5-turbo"
-        mock.openai.moderation_model = "text-moderation-latest"
-        mock.chromadb.chroma_collection = "test-collection"
-        mock.sqlite.db_url = "sqlite+aiosqlite:///:memory:"
-        mock.cors.allow_origins = ["*"]
-        yield mock
-
-
-@pytest.fixture
-def client(mock_secrets):
+def client():
     """Create test client."""
     return TestClient(app)
 

@@ -1,12 +1,11 @@
-import os
-
 import requests
 import streamlit as st
+
 
 st.set_page_config(page_title="Chroma Knowledge Search", layout="centered")
 st.title("Chroma Knowledge Search")
 
-API_BASE_DEFAULT = os.getenv("API_BASE", "http://localhost:8000/api")
+API_BASE_DEFAULT = "http://backend:8000/api"
 
 if "api_base" not in st.session_state:
     st.session_state["api_base"] = API_BASE_DEFAULT

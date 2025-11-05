@@ -20,8 +20,8 @@ services:
       - OPENAI_MODERATION_MODEL=omni-moderation-latest
       - CHROMA_HOST=chroma
       - CHROMA_PORT=8000
-      - CHROMA_COLLECTION=documents
-      - DATABASE_URL=sqlite+aiosqlite:///./data.db
+      - CHROMA_COLLECTION=${CHROMA_COLLECTION}
+      - DATABASE_URL=${DB_URL}
       - SECRET_KEY=${SECRET_KEY}
       - API_KEY=${API_KEY}
     ports:
@@ -36,7 +36,7 @@ services:
       - backend
     environment:
       - STREAMLIT_SERVER_ENABLECORS=false
-      - API_BASE=http://backend:8000/api
+      - API_BASE=${API_BASE}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
