@@ -6,7 +6,7 @@
 
 - 🧠 **OpenAI** — embeddings + LLM responses + moderation  
 - 🔎 **ChromaDB** — vector storage & retrieval  
-- ⚙️ **FastAPI** — secure backend RAG service  
+- ⚙️ **FastAPI** — secure backend RAG service (Deploy via Render)
 - 🎛️ **Streamlit** — interactive upload + question UI  
 - 🔐 **API Key Authentication**  
 - 🗄️ **SQLite metadata DB**  
