@@ -1,16 +1,31 @@
 import chromadb
 import streamlit as st
 import socket
+import os
 
-client = (
-    chromadb.Client()
-    if socket.gethostname() == st.secrets.hosts.hostname
-    else chromadb.CloudClient(
-        api_key=st.secrets.chromadb.chroma_api_key,
-        tenant=st.secrets.chromadb.chroma_tenant,
-        database=st.secrets.chromadb.chroma_database,
-    )
-)
+_client = None
+
+
+def get_client():
+    """Get ChromaDB client instance."""
+    global _client
+    if _client is None:
+        # Use local client in test environment
+        if os.getenv("PYTEST_CURRENT_TEST") or "pytest" in os.environ.get(
+            "_", ""
+        ):
+            _client = chromadb.Client()
+        else:
+            _client = (
+                chromadb.Client()
+                if socket.gethostname() == st.secrets.hosts.hostname
+                else chromadb.CloudClient(
+                    api_key=st.secrets.chromadb.chroma_api_key,
+                    tenant=st.secrets.chromadb.chroma_tenant,
+                    database=st.secrets.chromadb.chroma_database,
+                )
+            )
+    return _client
 
 
 def get_or_create_collection():
@@ -19,6 +34,7 @@ def get_or_create_collection():
     Returns:
         Collection: ChromaDB collection instance
     """
+    client = get_client()
     try:
         return client.get_collection(st.secrets.chromadb.chroma_collection)
     except Exception:

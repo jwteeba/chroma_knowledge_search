@@ -135,8 +135,9 @@ def mock_openai():
 def mock_chroma():
     """Mock ChromaDB client."""
     with patch(
-        "chroma_knowledge_search.backend.app.chroma_client.client"
-    ) as mock_client:
+        "chroma_knowledge_search.backend.app.chroma_client.get_client"
+    ) as mock_get_client:
+        mock_client = Mock()
         mock_collection = Mock()
         mock_collection.query.return_value = {
             "documents": [["Test document content"]],
@@ -144,4 +145,5 @@ def mock_chroma():
         }
         mock_client.get_collection.return_value = mock_collection
         mock_client.create_collection.return_value = mock_collection
+        mock_get_client.return_value = mock_client
         yield mock_client
