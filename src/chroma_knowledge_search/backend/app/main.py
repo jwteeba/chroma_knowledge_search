@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down application")
 
 
-app = FastAPI(title="Chroma Knowledge Search (API Key)", lifespan=lifespan)
+app = FastAPI(title="Chroma Knowledge Search", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
