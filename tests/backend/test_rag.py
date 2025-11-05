@@ -68,7 +68,7 @@ class TestRAG:
 
             answer = generate_answer(chunks, question)
 
-            assert "can’t assist" in answer
+            assert "can't assist" in answer
             mock_client.chat.completions.create.assert_not_called()
 
     def test_generate_answer_flagged_response(self):
@@ -97,4 +97,4 @@ class TestRAG:
 
             answer = generate_answer(chunks, question)
 
-            assert "can’t share" in answer
+            assert "can't share" in answer

@@ -1,8 +1,10 @@
 import streamlit as st
 from openai import OpenAI
 
+from chroma_knowledge_search.backend.app.logging_config import get_logger
 from chroma_knowledge_search.backend.app.moderation import is_flagged
 
+logger = get_logger(__name__)
 client = OpenAI(api_key=st.secrets.openai.api_key)
 
 SYSTEM_PROMPT = (
@@ -45,9 +47,14 @@ def generate_answer(context_chunks: list[str], question: str) -> str:
     Returns:
         str: Generated answer or safety message
     """
+    logger.debug(
+        f"Generating answer for question with {len(context_chunks)} context chunks"
+    )
+
     # Safety pre-check on user question
     if is_flagged(question):
-        return "I'm sorry, I can’t assist with that request."
+        logger.warning("Question flagged by moderation")
+        return "I'm sorry, I can't assist with that request."
 
     messages = build_prompt(context_chunks, question)
     resp = client.chat.completions.create(
@@ -59,5 +66,8 @@ def generate_answer(context_chunks: list[str], question: str) -> str:
 
     # Safety post-check on model answer
     if is_flagged(answer):
-        return "I'm sorry, I can’t share that content."
+        logger.warning("Generated answer flagged by moderation")
+        return "I'm sorry, I can't share that content."
+
+    logger.debug("Answer generated successfully")
     return answer

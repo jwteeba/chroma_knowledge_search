@@ -7,11 +7,10 @@ from chroma_knowledge_search.backend.app.auth import require_api_key
 from chroma_knowledge_search.backend.app.chroma_client import (
     query as chroma_query,
 )
-from chroma_knowledge_search.backend.app.chroma_client import (
-    upsert_chunks,
-)
+from chroma_knowledge_search.backend.app.chroma_client import upsert_chunks
 from chroma_knowledge_search.backend.app.db import get_db
 from chroma_knowledge_search.backend.app.embeddings import get_embeddings
+from chroma_knowledge_search.backend.app.logging_config import get_logger
 from chroma_knowledge_search.backend.app.models import Document
 from chroma_knowledge_search.backend.app.rag import generate_answer
 from chroma_knowledge_search.backend.app.schemas import (
@@ -23,6 +22,8 @@ from chroma_knowledge_search.backend.app.utils import (
     chunk_text,
     extract_text_from_file,
 )
+
+logger = get_logger(__name__)
 
 router = APIRouter()
 
@@ -55,21 +56,29 @@ async def upload(
     CHUNK_SIZE = 800
     CHUNK_OVERLAP = 200
     content = await file.read()
+    logger.info(f"Processing upload: {file.filename} ({len(content)} bytes)")
     if len(content) > MAX_FILE_SIZE_MB * 1024 * 1024:
+        logger.warning(
+            f"File too large: {file.filename} ({len(content)} bytes)"
+        )
         raise HTTPException(status_code=413, detail="File too large")
 
     # Extract text
     text = await extract_text_from_file(content, file.filename)
     if not text or not text.strip():
+        logger.error(f"No readable text found in {file.filename}")
         raise HTTPException(status_code=400, detail="No readable text found")
+    logger.debug(f"Extracted {len(text)} characters from {file.filename}")
 
     # Chunking
     chunks = chunk_text(text, CHUNK_SIZE, CHUNK_OVERLAP)
     chunks = [c for c in chunks if c["text"].strip()]  # ✅ remove empty chunks
     if not chunks:
+        logger.error(f"No valid text chunks extracted from {file.filename}")
         raise HTTPException(
             status_code=400, detail="No valid text chunks extracted"
         )
+    logger.info(f"Created {len(chunks)} text chunks")
 
     # Embeddings
     texts = [c["text"] for c in chunks]
@@ -99,6 +108,9 @@ async def upload(
     db.add(doc)
     await db.commit()
 
+    logger.info(
+        f"Successfully processed {file.filename}: {document_id} with {len(chunks)} chunks"
+    )
     return UploadResponse(document_id=document_id, chunks_indexed=len(chunks))
 
 
@@ -122,6 +134,7 @@ async def query_docs(
         QueryResult: Generated answer and source document IDs
     """
 
+    logger.info(f"Processing query: '{req.query}' with top_k={req.top_k}")
     qemb = get_embeddings([req.query])[0]
     res = chroma_query(qemb, top_k=req.top_k, owner_key=owner_key)
 
@@ -129,6 +142,7 @@ async def query_docs(
     metadatas = res.get("metadatas", [[]])[0]
 
     if not docs:
+        logger.info("No relevant documents found for query")
         return QueryResult(
             answer="I couldn't find relevant context for your question.",
             sources=[],
@@ -144,4 +158,7 @@ async def query_docs(
     # Deduplicate while preserving order
     sources = list(dict.fromkeys(sources))
 
+    logger.info(
+        f"Generated answer from {len(docs)} documents, {len(sources)} unique sources"
+    )
     return QueryResult(answer=answer, sources=sources)
