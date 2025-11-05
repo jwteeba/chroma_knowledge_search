@@ -16,8 +16,9 @@ def get_engine():
             from chroma_knowledge_search.backend.app.config import load_config
 
             load_config()
-        except Exception:
-            pass  # Config loading may fail in tests
+        except (ImportError, FileNotFoundError):
+            # Config loading may fail in tests or when files don't exist
+            pass
 
         db_url = os.getenv("DB_URL", "sqlite+aiosqlite:///:memory:")
         _engine = create_async_engine(db_url, echo=False, future=True)

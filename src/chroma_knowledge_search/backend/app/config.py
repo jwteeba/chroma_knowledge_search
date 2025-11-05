@@ -54,8 +54,12 @@ def load_config():
             from dotenv import load_dotenv
 
             load_dotenv()
-        except Exception:
-            pass  # .env file may not exist in CI
+        except ImportError:
+            # dotenv not available, skip loading
+            pass
+        except FileNotFoundError:
+            # .env file may not exist in CI
+            pass
 
 
 def get_allow_origins():
