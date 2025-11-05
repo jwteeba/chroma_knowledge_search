@@ -1,52 +1,53 @@
 import os
 import sys
-import pytest
 from unittest.mock import Mock, patch
-from fastapi.testclient import TestClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
 
-from chroma_knowledge_search.backend.app.config import load_config
-from chroma_knowledge_search.backend.app.db import get_db
-from chroma_knowledge_search.backend.app.main import app
-from chroma_knowledge_search.backend.app.models import Base
+# Mock OpenAI BEFORE setting environment variables
+mock_openai = Mock()
+mock_client = Mock()
 
-# Set test environment variables
-os.environ["DB_URL"] = "sqlite+aiosqlite:///:memory:"
-os.environ["API_KEY"] = "test-api-key"
-os.environ["OPENAI_API_KEY"] = "test-openai-key"
-os.environ["OPENAI_EMBED_MODEL"] = "text-embedding-ada-002"
-os.environ["OPENAI_CHAT_MODEL"] = "gpt-3.5-turbo"
-os.environ["OPENAI_MODERATION_MODEL"] = "text-moderation-latest"
-os.environ["CHROMA_COLLECTION"] = "test-collection"
-os.environ["ALLOW_ORIGINS"] = "*"
+# Mock embeddings
+mock_embed_response = Mock()
+mock_embed_response.data = [Mock(embedding=[0.1] * 1536)]
+mock_client.embeddings.create.return_value = mock_embed_response
 
-# Mock OpenAI client
-if "openai" not in sys.modules:
-    mock_openai = Mock()
-    mock_client = Mock()
+# Mock chat completions
+mock_chat_response = Mock()
+mock_chat_response.choices = [Mock(message=Mock(content="Test answer"))]
+mock_client.chat.completions.create.return_value = mock_chat_response
 
-    # Mock embeddings
-    mock_embed_response = Mock()
-    mock_embed_response.data = [Mock(embedding=[0.1] * 1536)]
-    mock_client.embeddings.create.return_value = mock_embed_response
+# Mock moderation
+mock_mod_response = Mock()
+mock_mod_response.results = [Mock(flagged=False)]
+mock_client.moderations.create.return_value = mock_mod_response
 
-    # Mock chat completions
-    mock_chat_response = Mock()
-    mock_chat_response.choices = [Mock(message=Mock(content="Test answer"))]
-    mock_client.chat.completions.create.return_value = mock_chat_response
+mock_openai.OpenAI.return_value = mock_client
+sys.modules["openai"] = mock_openai
 
-    # Mock moderation
-    mock_mod_response = Mock()
-    mock_mod_response.results = [Mock(flagged=False)]
-    mock_client.moderations.create.return_value = mock_mod_response
+# Set test environment variables AFTER mocking OpenAI
+# os.environ["DB_URL"] = "sqlite+aiosqlite:///:memory:"
+# os.environ["API_KEY"] = "test-api-key"
+# os.environ["OPENAI_API_KEY"] = "test-openai-key"
+# os.environ["OPENAI_EMBED_MODEL"] = "text-embedding-ada-002"
+# os.environ["OPENAI_CHAT_MODEL"] = "gpt-3.5-turbo"
+# os.environ["OPENAI_MODERATION_MODEL"] = "text-moderation-latest"
+# os.environ["CHROMA_COLLECTION"] = "test-collection"
+# os.environ["ALLOW_ORIGINS"] = "*"
 
-    mock_openai.OpenAI.return_value = mock_client
-    sys.modules["openai"] = mock_openai
+import pytest  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from sqlalchemy.ext.asyncio import (  # noqa: E402
+    AsyncSession,
+    create_async_engine,
+)
+from sqlalchemy.orm import sessionmaker  # noqa: E402
+from chroma_knowledge_search.backend.app.db import get_db  # noqa: E402
+from chroma_knowledge_search.backend.app.main import app  # noqa: E402
+from chroma_knowledge_search.backend.app.models import Base  # noqa: E402
 
 
 # Load config to set environment variables
-load_config()
+# load_config()
 
 # Override with test values after config loading
 os.environ["API_KEY"] = "test-api-key"
