@@ -79,18 +79,20 @@ class TestQueryEndpoint:
         with (
             patch("chroma_knowledge_search.backend.app.db.get_db") as mock_db,
             patch(
-                "chroma_knowledge_search.backend.app.chroma_client.client"
-            ) as mock_client,
+                "chroma_knowledge_search.backend.app.chroma_client.get_client"
+            ) as mock_get_client,
         ):
             mock_session = Mock()
             mock_db.return_value.__aenter__.return_value = mock_session
 
+            mock_client = Mock()
             mock_collection = Mock()
             mock_collection.query.return_value = {
                 "documents": [[]],
                 "metadatas": [[]],
             }
             mock_client.get_collection.return_value = mock_collection
+            mock_get_client.return_value = mock_client
 
             headers = {"x-api-key": "test-api-key"}
             data = {"query": "nonexistent content"}

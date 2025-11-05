@@ -20,12 +20,14 @@ class TestChromaClient:
     def test_get_or_create_collection_create_new(self, mock_secrets):
         """Test creating new collection when it doesn't exist."""
         with patch(
-            "chroma_knowledge_search.backend.app.chroma_client.client"
-        ) as mock_client:
+            "chroma_knowledge_search.backend.app.chroma_client.get_client"
+        ) as mock_get_client:
+            mock_client = Mock()
             mock_client.get_collection.side_effect = Exception("Not found")
             mock_collection = Mock()
             mock_collection.name = "test-collection"
             mock_client.create_collection.return_value = mock_collection
+            mock_get_client.return_value = mock_client
 
             collection = get_or_create_collection()
 
