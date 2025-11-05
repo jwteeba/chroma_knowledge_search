@@ -1,6 +1,5 @@
 import chromadb
 import streamlit as st
-import socket
 import os
 
 _client = None
@@ -16,15 +15,22 @@ def get_client():
         ):
             _client = chromadb.Client()
         else:
-            _client = (
-                chromadb.Client()
-                if socket.gethostname() == st.secrets.hosts.hostname
-                else chromadb.CloudClient(
-                    api_key=st.secrets.chromadb.chroma_api_key,
-                    tenant=st.secrets.chromadb.chroma_tenant,
-                    database=st.secrets.chromadb.chroma_database,
-                )
-            )
+            # Use Chroma Cloud if credentials are available
+            try:
+                if (
+                    hasattr(st.secrets, "chromadb")
+                    and hasattr(st.secrets.chromadb, "chroma_api_key")
+                    and st.secrets.chromadb.chroma_api_key
+                ):
+                    _client = chromadb.CloudClient(
+                        api_key=st.secrets.chromadb.chroma_api_key,
+                        tenant=st.secrets.chromadb.chroma_tenant,
+                        database=st.secrets.chromadb.chroma_database,
+                    )
+                else:
+                    _client = chromadb.Client()
+            except Exception:
+                _client = chromadb.Client()
     return _client
 
 
